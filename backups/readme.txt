@@ -9,6 +9,9 @@ D: \Dev\it30a\backups
     student_last_name VARCHAR(50) NOT NULL,
     student_course VACHAR(50) NOT NULL);
 
+SHOW DATABASES
+CONNECT 
+
 utility commands
 \! cls
 mysqldump -u root -p --databases lib_db > C:\Users\Admin\Documents\it30a\backups\08182026_lib_db.sql
@@ -30,4 +33,3 @@ UPDATE students SET student_created_at = CURRENT_TIMESTAMP WHERE student_created
 ALTER TABLE students MODIFY COLUMN student_created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 
-tablessg
