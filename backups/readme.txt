@@ -16,14 +16,7 @@ utility commands
 \! cls
 mysqldump -u root -p --databases lib_db > C:\Users\Admin\Documents\it30a\backups\08182026_lib_db.sql
 
-C:\Users\Admin\Documents\RacasaDev\IT30A\backups
-%date:~-4%_
-%date:~4,2%_
-%date:~7,2%_
-%time:~0,2%_
-%time:~3,2%_
-%time:~6,2%_
-library_db.sql"
+mysqldump -u root -p --databases lib_db > C:\Users\Admin\Documents\RacasaDev\IT30A\backups\%date:~-4%_%date:~4,2%_%date:~7,2%_%time:~0,2%_%time:~3,2%_%time:~6,2%_library_db.sql"
 
 
 Laboratory 2
