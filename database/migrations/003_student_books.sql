@@ -66,7 +66,7 @@ SELECT
     WHERE book_id = 1
     LIMIT 1;
 
--- Student Query #11 - update books firstname,lastname using specific id 
+-- Student Query #11 - update books title, category, author using specific id 
 UPDATE books
 SET 
     book_title = 'Pride and Prejudice ',
