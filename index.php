@@ -325,6 +325,7 @@ if($section === 'borrow'){
         }
     }
 
+<<<<<<< HEAD
     if($section === 'borrow') {
 
     // Fetch Students for borrow form
@@ -371,6 +372,8 @@ if($section === 'borrow'){
 
     $borrows = $stmt->fetchAll();
 }
+=======
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
 ?>
 
 <!DOCTYPE html>
@@ -477,6 +480,7 @@ if($section === 'borrow'){
                 </a>
             </form>
         <?php else: ?>
+<<<<<<< HEAD
              <style>
     table {
         border-collapse: collapse;
@@ -493,6 +497,8 @@ if($section === 'borrow'){
     </style>
 
             <table cellpadding="10">
+=======
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
             <table cellpadding="5">
                 <thead>
                     <tr>
@@ -625,6 +631,7 @@ if($section === 'borrow'){
                 </a>
             </form>
         <?php else: ?>
+<<<<<<< HEAD
              <style>
     table {
         border-collapse: collapse;
@@ -641,6 +648,8 @@ if($section === 'borrow'){
     </style>
 
             <table cellpadding="10">
+=======
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
             <table cellpadding="5" >
                 <thead>
                     <tr>
@@ -694,7 +703,10 @@ if($section === 'borrow'){
         <?php if($action==='create'): ?>
                 <h3>Borrow a Book</h3>
                 <form method="POST">
+<<<<<<< HEAD
 
+=======
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
                     <p>
                         <label>Student: </label>
                         <br>
@@ -739,7 +751,10 @@ if($section === 'borrow'){
 
                         </select>
                     </p>
+<<<<<<< HEAD
                     
+=======
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
 
                     <button type="submit">
                         Borrow
@@ -749,6 +764,7 @@ if($section === 'borrow'){
                     </a>
                 </form>
         <?php endif; ?>
+<<<<<<< HEAD
         <h2>Borrow Records</h2>
 
      <style>
@@ -818,6 +834,8 @@ if($section === 'borrow'){
     </table>
 
 
+=======
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
     <?php endif; ?>
 
 </body>
@@ -830,8 +848,12 @@ if($section === 'borrow'){
 
 <?php endif; ?>
 
+<<<<<<< HEAD
 
 
 </html>
 
 <!-- wrong -->
+=======
+</html>
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
