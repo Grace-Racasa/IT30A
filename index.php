@@ -477,6 +477,22 @@ if($section === 'borrow'){
                 </a>
             </form>
         <?php else: ?>
+             <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+    </style>
+
+            <table cellpadding="10">
             <table cellpadding="5">
                 <thead>
                     <tr>
@@ -609,6 +625,22 @@ if($section === 'borrow'){
                 </a>
             </form>
         <?php else: ?>
+             <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+    </style>
+
+            <table cellpadding="10">
             <table cellpadding="5" >
                 <thead>
                     <tr>
@@ -719,7 +751,22 @@ if($section === 'borrow'){
         <?php endif; ?>
         <h2>Borrow Records</h2>
 
-    <table>
+     <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+    </style>
+
+            <table cellpadding="10">
         <thead>
             <tr>
                 <th>Borrow ID</th>
