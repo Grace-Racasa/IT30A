@@ -12,6 +12,23 @@ INSERT INTO books (book_title,book_author,book_category) VALUES
 ("TAMING THE WAVES", "INKSTEADY", "ROMANCE"),
 ("THE HUNGER GAMES", "SUZANNE COLLINS", "SCIENCE FICTION");
 
+
+CREATE TABLE students (
+
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_first_name VARCHAR(50) NOT NULL,
+    student_last_name VARCHAR(50) NOT NULL,
+    student_course VARCHAR(50) NOT NULL,
+    student_created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO students (student_first_name,student_last_name,student_course) VALUES 
+("Grace", "Racasa", "BSIT"),
+("Thrisha", "Martizano", "BSIT"),
+("Hazel Jane", "Lihotan", "BSIT"),
+("Nicole", "Cruz", "BSed");
+
+
 CREATE TABLE borrow(
     borrow_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
