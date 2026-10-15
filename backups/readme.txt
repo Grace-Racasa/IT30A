@@ -14,9 +14,13 @@ CONNECT
 
 utility commands
 \! cls
-mysqldump -u root -p --databases lib_db > C:\Users\Admin\Documents\it30a\backups\08182026_lib_db.sql
+mysqldump -u root -p --databases lib_db > D:\xampp\htdocs\IT30A\backups\08182026_lib_db.sql
 
-mysqldump -u root -p --databases lib_db > C:\Users\Admin\Documents\RacasaDev\IT30A\backups\%date:~-4%_%date:~4,2%_%date:~7,2%_%time:~0,2%_%time:~3,2%_%time:~6,2%_lib_db.sql"
+<<<<<<< HEAD
+mysqldump -u root -p --databases lib_db > C:\xampp\htdocs\IT30A\backups-02\%date:~-4%_%date:~4,2%_%date:~7,2%_%time:~0,2%_%time:~3,2%_%time:~6,2%_lib_db.sql"
+=======
+mysqldump -u root -p --databases lib_db > D:\xampp\htdocs\IT30A\backups\%date:~-4%_%date:~4,2%_%date:~7,2%_%time:~0,2%_%time:~3,2%_%time:~6,2%_it30a_lab_db.sql"
+>>>>>>> b619ba9e4cbdaa3b1076d47fb19021fe99893c74
 
 
 Laboratory 2
