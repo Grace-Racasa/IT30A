@@ -1,449 +1,805 @@
-
 <?php
+// Database Connection
+$host = 'localhost';
+$db = 'it30a_lab_db';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host; dbname=$db; charset=$charset";
+
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false
+];
+
+try{
+    $pdo = new PDO($dsn, $user, $pass, $options);
+}catch(PDOException $e){
+    die("Database connection failed" . $e->getMessage());
+}
+
+// Session
 session_start();
 
-require 'config.php';
+// Determine current section
+$section = $_GET['section'] ?? 'students';
 
-// ---------- 1. DETERMINE CURRENT SECTION ----------
-
-$section = $_GET['section'] ?? 'dashboard';
+// CRUD Operations
 $action = $_GET['action'] ?? '';
+
+//----------------------------------
+//Students
+//----------------------------------
+
+//Fetch students
+if($section === 'students'){
+    $stmt = $pdo->query("
+        SELECT *
+        FROM students
+        ORDER by student_id DESC
+        ");
+
+        $students = $stmt->fetchAll();
+}
+
+// Create Student
+if($section==='students' && $action==='create'){
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        $firstName = trim($_POST['student_first_name'] ?? '');
+        $lastName = trim($_POST['student_last_name'] ?? '');
+        $course = trim($_POST['student_course'] ?? '');
+        if($firstName !== '' && $lastName !='' && $course !==''){
+
+        $sql=("
+            INSERT INTO students (
+                student_first_name,
+                student_last_name,
+                student_course
+            )
+            VALUES (?,?,?)
+        ");
+
+      $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            $firstName,
+            $lastName,
+            $course
+        ]);
+
+        $_SESSION['alert'] = 'Student Saved Successfully';
+
+        header("Location: index.php?section=students");
+        exit;
+
+
+        }
+    }
+
+}
+
+// Update Student
+if($section==='students' && $action==='update'){
+    $studentId = (int) ($_GET['id'] ?? 0);
+
+    // Retrieve Student Information
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM students
+        WHERE student_id = ?
+    ");
+
+    $stmt->execute([$studentId]);
+
+    $student = $stmt->fetch();
+
+    // Update Student Info
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        $firstName = trim($_POST['student_first_name'] ?? '');
+        $lastName = trim($_POST['student_last_name'] ?? '');
+        $course = trim($_POST['student_course'] ?? '');
+        if($firstName !== '' && $lastName !='' && $course !==''){
+
+        $sql =("
+            UPDATE students
+            SET
+                student_first_name=?,
+                student_last_name=?,
+                student_course =?
+            WHERE student_id =?
+        ");
+
+      $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            $firstName,
+            $lastName,
+            $course,
+            $studentId
+        ]);
+
+         $_SESSION['alert'] = 'Student Update Successfully';
+
+        header("Location: index.php?section=students");
+        exit;
+
+
+        }
+    }
+}
+
+
+//--------------------------------
+// Books
+//--------------------------------
+
+if($section === 'books'){
+    $stmt = $pdo->query("
+        SELECT *
+        FROM books
+        ORDER by book_id DESC
+        ");
+
+        $books = $stmt->fetchAll();
+}
+
+// Create Book
+if($section==='books' && $action==='create'){
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        $bookTitle = trim($_POST['book_title'] ?? '');
+        $bookAuthor = trim($_POST['book_author'] ?? '');
+        $category = trim($_POST['book_category'] ?? '');
+        if($bookTitle !== '' && $bookAuthor !='' && $category !==''){
+
+        $sql=("
+            INSERT INTO books (
+                book_title,
+                book_author,
+                book_category
+            )
+            VALUES (?,?,?)
+        ");
+
+      $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            $bookTitle,
+            $bookAuthor,
+            $category
+        ]);
+
+         $_SESSION['alert'] = 'Book Saved Successfully';
+
+        header("Location: index.php?section=books");
+        exit;
+
+
+        }
+    }
+
+}
+
+// Update Books
+if($section==='books' && $action==='update'){
+    $book_id = (int) ($_GET['id'] ?? 0);
+
+    // Retrieve Student Information
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM books
+        WHERE book_id = ?
+    ");
+
+    $stmt->execute([$book_id]);
+
+    $book = $stmt->fetch();
+
+    // Update Book Info
+    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        $bookTitle = trim($_POST['book_title'] ?? '');
+        $bookAuthor = trim($_POST['book_author'] ?? '');
+        $category = trim($_POST['book_category'] ?? '');
+        if($bookTitle !== '' && $bookAuthor !='' && $category !==''){
+
+        $sql =("
+            UPDATE books
+            SET
+                book_title=?,
+                book_author=?,
+                book_category =?
+            WHERE book_id =?
+        ");
+
+      $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            $bookTitle,
+            $bookAuthor,
+            $category,
+            $book_id
+        ]);
+
+         $_SESSION['alert'] = 'Book Updated Successfully';
+
+        header("Location: index.php?section=books");
+        exit;
+
+
+        }
+    }
+}
+
+//--------------------------------
+// Borrow
+//--------------------------------
+
+// Fetch Borrow Records
+
+if($section === 'borrow'){
+    // Fetch Students for borrow form
+    $stmt=$pdo->query("
+        SELECT
+            student_id,
+            student_first_name,
+            student_last_name
+        FROM students
+        ORDER by student_last_name,student_first_name
+    ");
+    $students = $stmt->fetchAll();
+    // Fecth Books for borrow form
+
+    $stmt=$pdo->query("
+        SELECT
+            book_id,
+            book_title,
+            book_author
+        FROM books
+        ORDER by book_title
+    ");
+
+    $books = $stmt->fetchALL();
+
+        // Fetch Borrow Records for table
+    $stmt = $pdo->query("
+        SELECT
+            borrow.borrow_id,
+            borrow.borrow_date,
+            borrow.borrow_return_date,
+            students.student_first_name,
+            students.student_last_name,
+            books.book_title,
+            books.book_author
+        FROM borrow
+        INNER JOIN students
+            ON borrow.student_id = students.student_id
+        INNER JOIN books
+            ON borrow.book_id = books.book_id
+        ORDER BY borrow.borrow_id DESC
+
+    
+    ");
+
+    $borrows = $stmt->fetchAll();
+    
+
+
+}
+
+// Borrow a Book
+ if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        $bookId = (int)($_POST['book_id'] ?? 0);
+
+        if($studentId > 0 && $bookId > 0){
+            
+            // Check if student has an unreturned book
+            $stmt = $pdo->prepare("
+                SELECT borrow_id
+                FROM borrow
+                WHERE student_id=?
+                  AND borrow_return_date IS NULL
+                LIMIT 1
+            ");
+
+            $stmt->execute([$studentId]);
+            $studentBorrow = $stmt->fetch();
+
+            if($studentBorrow){
+                $_SESSION['alert'] = 'This student cannot borrow another book because a previous book has not been returned';
+            } else {
+                
+                // Check if book is already returned
+                $stmt = $pdo->prepare("
+                    SELECT borrow_id
+                    FROM borrow
+                    WHERE book_id=?
+                      AND borrow_return_date IS NULL
+                    LIMIT 1
+                ");
+
+                $stmt->execute([$bookId]);
+                $bookBorrow = $stmt->fetch();
+
+                if($bookBorrow){
+                    $_SESSION['alert'] = 'This book cannot be borrowed because it has not been returned';
+                }else{
+                    
+                    // Create borrow record finally
+                    $stmt = $pdo->prepare("
+                        INSERT INTO borrow(
+                            student_id,
+                            book_id
+                        )
+                        VALUES(?,?)
+                    ");
+
+                    $stmt->execute([
+                        $studentId,
+                        $bookId
+                    ]);
+
+                    $_SESSION['alert'] = 'Book borrowed successfully';
+                }
+            
+            }
+            header("Location: index.php?section=borrow");
+            exit;
+        }
+        
+    }
+// Return a Book
+   if($section==='borrow' && $action==='return'){
+        $borrowId = (int)($_GET['id'] ?? 0);
+
+        
+            $stmt = $pdo->prepare("
+                UPDATE borrow
+                SET borrow_return_date=NOW()
+                WHERE borrow_id=?
+            ");
+
+            $stmt->execute([$borrowId]);
+
+            $_SESSION['alert'] = 'Book returned successfully';
+        
+
+        header("Location: index.php?section=borrow");
+        exit;
+    }
+
+
+
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Library · Dashboard</title>
-
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-    <style>
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Materialize Base Typography */
-
-        body {
-            background: #f5f5f5;
-            font-family: Roboto, system-ui, -apple-system, sans-serif;
-            color: #212121;
-            padding: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .dashboard {
-            max-width: 1300px;
-            width: 100%;
-        }
-
-
-        /* NAVBAR */
-
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-            max-width: 1300px;
-            width: 100%;
-        }
-
-        .app-header h1 {
-            font-weight: 400;
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: .25rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #616161;
-            font-size: .9rem;
-            font-weight: 500;
-            padding: .6rem 1.2rem;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: .35rem;
-        }
-
-        .nav-links a:hover {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .nav-links a.active {
-            background: #1976d2;
-            color: white;
-        }
-
-
-        /* KPI CARDS */
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-        /* Materialize Standard Card */
-
-        .stat-card,
-        .chart-card,
-        .recent-borrows {
-            background: #ffffff;
-            border-radius: 2px;
-            box-shadow:
-                0 2px 2px 0 rgba(0,0,0,0.14),
-                0 3px 1px -2px rgba(0,0,0,0.12),
-                0 1px 5px 0 rgba(0,0,0,0.2);
-            transition: box-shadow 0.3s;
-        }
-
-        .stat-card:hover,
-        .chart-card:hover,
-        .recent-borrows:hover {
-            box-shadow:
-                0 4px 5px 0 rgba(0,0,0,0.14),
-                0 1px 10px 0 rgba(0,0,0,0.12),
-                0 2px 4px -1px rgba(0,0,0,0.3);
-        }
-
-        .stat-card {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            border-top: 3px solid #1976d2;
-        }
-
-        .stat-card:nth-child(2) {
-            border-top-color: #4caf50;
-        }
-
-        .stat-card:nth-child(3) {
-            border-top-color: #ff9800;
-        }
-
-        .stat-card:nth-child(4) {
-            border-top-color: #f44336;
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 500;
-            color: #757575;
-        }
-
-        .stat-header .material-icons {
-            font-size: 1.8rem;
-            color: #bdbdbd;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 400;
-            color: #212121;
-            line-height: 1.2;
-        }
-
-        .stat-sub {
-            font-size: 0.85rem;
-            color: #9e9e9e;
-            margin-top: 0.3rem;
-        }
-
-
-        /* CHARTS */
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .chart-card {
-            padding: 1.5rem;
-        }
-
-        .chart-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #212121;
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 0.8rem;
-        }
-
-        .chart-title span {
-            font-weight: 500;
-            color: #1976d2;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .chart-title span .material-icons {
-            font-size: 1rem;
-        }
-
-        canvas {
-            display: block;
-            width: 100% !important;
-            height: auto !important;
-            max-height: 200px;
-        }
-
-
-        /* RECENT BORROWS */
-
-        .recent-borrows {
-            padding: 1.5rem;
-        }
-
-        .recent-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 0.8rem;
-        }
-
-        .recent-header h3 {
-            font-weight: 500;
-            font-size: 1.1rem;
-            color: #212121;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .recent-header h3 .material-icons {
-            color: #1976d2;
-        }
-
-        .recent-header a {
-            font-size: 0.85rem;
-            color: #1976d2;
-            font-weight: 500;
-            text-transform: uppercase;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.2rem;
-        }
-
-        .recent-header a:hover {
-            text-decoration: underline;
-        }
-
-        .recent-header a .material-icons {
-            font-size: 1rem;
-        }
-
-        .borrow-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid #eeeeee;
-            font-size: 0.95rem;
-        }
-
-        .borrow-row:last-child {
-            border-bottom: none;
-        }
-
-        .borrow-student {
-            font-weight: 500;
-            color: #424242;
-            width: 30%;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .borrow-book {
-            color: #616161;
-            width: 45%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .borrow-student .material-icons,
-        .borrow-book .material-icons {
-            font-size: 1.1rem;
-            color: #9e9e9e;
-        }
-
-        /* Material Design Chips */
-
-        .borrow-status {
-            font-size: 0.75rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 16px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .borrow-status .material-icons {
-            font-size: 0.9rem;
-        }
-
-        .borrow-status.returned {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .borrow-status.borrowed {
-            background: #fff3e0;
-            color: #ef6c00;
-        }
-
-        .footer-note {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #9e9e9e;
-            letter-spacing: 0.5px;
-        }
-
-
-        /* RESPONSIVE */
-
-        @media (max-width: 760px) {
-
-            .app-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .nav-links {
-                width: 100%;
-                overflow-x: auto;
-            }
-
-            .nav-links a {
-                white-space: nowrap;
-            }
-
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .borrow-student,
-            .borrow-book {
-                width: auto;
-                flex: 1;
-            }
-
-            .borrow-row {
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-
-        }
-
-    </style>
-
+    <title>Library System</title>
 </head>
-
 <body>
+    <h1>Simple Library System</h1>
+    <nav>
+        <a href="index.php?section=students">Students</a>
+        <a href="index.php?section=books">Books</a>
+        <a href="index.php?section=borrow">Borrow</a>
+    </nav>
+    <hr>
+    <?php if($section=='students'): ?>
+    <h1>Students</h1>
+        <p>
+         <a href="index.php?section=students&action=create">
+                Add Student
+        </a>
+        </p>
 
-    <!-- ---------- NAVBAR ---------- -->
+        <?php if($action==='create'): ?>
+            <h2>Add student</h2>
 
-    <?php include 'includes/navbar.php'; ?>
+            <form method="POST">
+                <p>
+                    <label>First Name</label>
+                    <br>
+                    <input type="text"
+                            name="student_first_name"
+                            required
+                    />
+                </p>
+                <p>
+                    <label>Last Name</label>
+                    <br>
+                    <input type="text"
+                            name="student_last_name"
+                            required
+                    />
+                </p>
 
+                <p>
+                    <label>Course</label>
+                    <br>
+                    <input type="text"
+                            name="student_course"
+                            required
+                    />
+                </p>
 
-    <!-- ---------- MAIN DASHBOARD ---------- -->
+                <button type="submit">
+                    Save
+                </button>
 
-    <main class="dashboard">
+                <a href="index.php?section=students">
+                    Cancel
+                </a>
 
-        <?php if ($section === 'dashboard'): ?>
+            </form>
+    <?php elseif($action==='update'): ?>
+                
+            <h2>Update Student</h2>
 
-            <?php include 'dashboard.php'; ?>
+            <form method="POST"> 
+                <p>
+                    <label>First Name</label>
+                    <br>
+                    <input type="text" 
+                        name="student_first_name"
+                        value="<?= htmlspecialchars($student['student_first_name']) ?>"
+                        required
+                />
+                </p>
+                <p>
+                    <label>Last Name</label>
+                    <br>
+                    <input type="text" 
+                    name="student_last_name"
+                    value="<?= htmlspecialchars($student['student_last_name']) ?>"
+                    required
+                />
+                </p>
+                <p>
+                    <label>Course</label>
+                    <br>
+                    <input type="text" 
+                    name="student_course"
+                    value="<?= htmlspecialchars($student['student_course']) ?>"
+                    required
+                />
+                </p>
 
-        <?php elseif ($section === 'students'): ?>
+                <button type="submit">
+                    Update
+                </button>
 
-            <h2>Students Management</h2>
-
-            <!-- Your existing Students CRUD code goes here -->
-
-
-        <?php elseif ($section === 'books'): ?>
-
-            <h2>Books Management</h2>
-
-            <!-- Your existing Books CRUD code goes here -->
-
-
-        <?php elseif ($section === 'borrow'): ?>
-
-            <h2>Borrow Management</h2>
-
-            <!-- Your existing Borrow CRUD code goes here -->
-
-
+                <a href="index.php?section=students">
+                    Cancel
+                </a>
+            </form>
         <?php else: ?>
-
-            <h2>Section not found.</h2>
-
+            <table border="1"cellpadding="8" >
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Course</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($students as $student): ?>
+                    <tr>
+                        <td>
+                            <?= htmlspecialchars($student['student_id']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($student['student_first_name']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($student['student_last_name']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($student['student_course']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($student['student_created_at']) ?>
+                        </td>
+                        <td>
+                            <a href ="index.php?section=students&action=update&id=<?= $student['student_id']?>">Edit</a>
+                            |
+                            <a>Delete</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         <?php endif; ?>
 
-    </main>
+
+    <?php endif; ?>
+    
+    <?php if($section==='books'): ?>
+        <h1>Books</h1>
+        <p>
+         <a href="index.php?section=books&action=create">
+                Add Book
+        </a>
+        </p>
+
+        <?php if($action==='create'): ?>
+            <h2>Add book</h2>
+
+            <form method="POST">
+                <p>
+                    <label>Book Title</label>
+                    <br>
+                    <input type="text"
+                            name="book_title"
+                            required
+                    />
+                </p>
+                <p>
+                    <label>Author</label>
+                    <br>
+                    <input type="text"
+                            name="book_author"
+                            required
+                    />
+                </p>
+
+                <p>
+                    <label>Category</label>
+                    <br>
+                    <input type="text"
+                            name="book_category"
+                            required
+                    />
+                </p>
+
+                <button type="submit">
+                    Save
+                </button>
+
+                <a href="index.php?section=books">
+                    Cancel
+                </a>
+
+            </form>
+    <?php elseif($action==='update'): ?>
+                
+            <h2>Update books</h2>
+
+            <form method="POST"> 
+                <p>
+                    <label>Book Title</label>
+                    <br>
+                    <input type="text" 
+                        name="book_title"
+                        value="<?= htmlspecialchars($book['book_title']) ?>"
+                        required
+                />
+                </p>
+                <p>
+                    <label>Author</label>
+                    <br>
+                    <input type="text" 
+                    name="book_author"
+                    value="<?= htmlspecialchars($book['book_author']) ?>"
+                    required
+                />
+                </p>
+                <p>
+                    <label>Category</label>
+                    <br>
+                    <input type="text" 
+                    name="book_category"
+                    value="<?= htmlspecialchars($book['book_category']) ?>"
+                    required
+                />
+                </p>
+
+                <button type="submit">
+                    Update
+                </button>
+
+                <a href="index.php?section=books">
+                    Cancel
+                </a>
+            </form>
+        <?php else: ?>
+            <table border="1"cellpadding="8" >
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Book Title</th>
+                        <th>Author</th>
+                        <th>Category</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($books as $book): ?>
+                    <tr>
+                        <td>
+                            <?= htmlspecialchars($book['book_id']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($book['book_title']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($book['book_author']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($book['book_category']) ?>
+                        </td>
+                        <td>
+                            <?= htmlspecialchars($book['book_created_at']) ?>
+                        </td>
+                        <td>
+                            <a href ="index.php?section=books&action=update&id=<?= $book['book_id']?>">Edit</a>
+                            |
+                            <a>Delete</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    <?php endif; ?>
+    
+    <?php if($section=='borrow'): ?>
+        <h1>Borrow</h1>
+
+        <p>
+            <a href="index.php?section=borrow&action=create">
+                Borrow a Book
+            </a>
+        </p>
+
+        <?php if($action==='create'): ?>
+                <h3>Borrow a Book</h3>
+                <form method="POST">
+                    <p>
+                        <label>Student: </label>
+                        <br>
+                        <select name="student_id" required>
+                            <option value="">
+                                -- Select Student --
+                            </option>
+
+                            <?php foreach($students as $student): ?>
+
+                                <option value=" <?= $student['student_id'] ?>">
+                                    <?= htmlspecialchars(
+                                        $student['student_first_name'] 
+                                        . " " .
+                                        $student['student_last_name']
+                                    ) ?>
+                                </option>
+
+                            <?php endforeach; ?>
+
+                        </select>
+                    </p>
+                    
+                    <p>
+                        <label>Books: </label>
+                        <br>
+                        <select name="book_id" required>
+                            <option value="">
+                                -- Select Book --
+                            </option>
+
+                            <?php foreach($books as $book): ?>
+
+                                <option value=" <?= $book['book_id'] ?>">
+                                    <?= htmlspecialchars(
+                                        $book['book_title'] 
+                                        . "  " .
+                                        $book['book_author']
+                                    ) ?>
+                                </option>
+                            <?php endforeach; ?>
+
+                        </select>
+                    </p>
+
+                    <button type="submit">
+                        Borrow
+                    </button>
+                    <a href = "index.php?section=borrow">
+                        Cancel
+                    </a>
+                </form>
+                
+        <?php endif; ?>
+        <h2>Borrow Records</h2>
+
+        <table border="1"cellpadding="8" >
+            <thead>
+                <tr>
+                    <th>Borrow ID</th>
+                    <th>Student Name</th>
+                    <th>Book</th>
+                    <th>Borrow Date</th>
+                    <th>Returned Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <?php foreach ($borrows as $borrow): ?>
+                    <tr>
+                        <td>
+                            <?= htmlspecialchars($borrow['borrow_id']) ?>
+                        </td>
+
+                        <td>
+                            <?= htmlspecialchars(
+                                $borrow['student_first_name']
+                                . " " .
+                                $borrow['student_last_name']
+                            ) ?>
+                        </td>
+
+                        <td>
+                            <?= htmlspecialchars(
+                                $borrow['book_title']
+                                . " - " .
+                                $borrow['book_author']
+                            ) ?>
+                        </td>
+
+                        <td>
+                            <?= htmlspecialchars($borrow['borrow_date']) ?>
+                        </td>
+
+                        <td>
+                            <?php if ($borrow['borrow_return_date']): ?>
+                                <?= htmlspecialchars($borrow['borrow_return_date']) ?>
+                            <?php else: ?>
+                                Not Returned
+                            <?php endif; ?>
+                        </td>
+
+                        <td>
+                            <?php if ($borrow['borrow_return_date']): ?>
+                                Returned
+                            <?php else: ?>
+                                Borrowed
+                            <?php endif; ?>
+                        </td>
+
+                        <td>
+                            <?php if (!$borrow['borrow_return_date']): ?>
+                                <a 
+                                    href="index.php?section=borrow&action=return&id=<?= $borrow['borrow_id'] ?>"
+                                    onclick="return confirm('Mark this book as returned?');"
+                                >
+                                    Return Book
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
 
 </body>
+<?php if (isset($_SESSION['alert'])): ?>
+    <script>
+        alert(<?=json_encode($_SESSION['alert']) ?>);
+    </script>
+
+    <?php unset($_SESSION['alert']); ?>
+
+<?php endif; ?>
 
 </html>
